@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template_string, jsonify
+﻿from flask import Flask, request, render_template_string, jsonify
 import pandas as pd
 import numpy as np
 import joblib
@@ -15,19 +15,11 @@ app = Flask(__name__)
 # 1. LOAD MODELS WITH ERROR HANDLING
 # ------------------------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-API_DIR = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(BASE_DIR, "model.pkl")
 scaler_path = os.path.join(BASE_DIR, "scaler.pkl")
 encoders_path = os.path.join(BASE_DIR, "label_encoders.pkl")
-if not os.path.exists(model_path):
-    model_path = os.path.join(API_DIR, "..", "model.pkl")
-    scaler_path = os.path.join(API_DIR, "..", "scaler.pkl")
-    encoders_path = os.path.join(API_DIR, "..", "label_encoders.pkl")
-model_path = os.path.join(BASE_DIR, 'model.pkl')
-scaler_path = os.path.join(BASE_DIR, 'scaler.pkl')
-encoders_path = os.path.join(BASE_DIR, 'label_encoders.pkl')
 
-print(f"📁 Looking for models in: {BASE_DIR}")
+print(f"ðŸ“ Looking for models in: {BASE_DIR}")
 
 model = None
 scaler = None
@@ -36,29 +28,29 @@ label_encoders = None
 try:
     if os.path.exists(model_path):
         model = joblib.load(model_path)
-        print("✅ Model loaded successfully")
+        print("âœ… Model loaded successfully")
     else:
-        print(f"❌ Model not found at: {model_path}")
+        print(f"âŒ Model not found at: {model_path}")
 except Exception as e:
-    print(f"❌ Error loading model: {e}")
+    print(f"âŒ Error loading model: {e}")
 
 try:
     if os.path.exists(scaler_path):
         scaler = joblib.load(scaler_path)
-        print("✅ Scaler loaded successfully")
+        print("âœ… Scaler loaded successfully")
     else:
-        print(f"❌ Scaler not found at: {scaler_path}")
+        print(f"âŒ Scaler not found at: {scaler_path}")
 except Exception as e:
-    print(f"❌ Error loading scaler: {e}")
+    print(f"âŒ Error loading scaler: {e}")
 
 try:
     if os.path.exists(encoders_path):
         label_encoders = joblib.load(encoders_path)
-        print("✅ Label encoders loaded successfully")
+        print("âœ… Label encoders loaded successfully")
     else:
-        print(f"❌ Label encoders not found at: {encoders_path}")
+        print(f"âŒ Label encoders not found at: {encoders_path}")
 except Exception as e:
-    print(f"❌ Error loading label encoders: {e}")
+    print(f"âŒ Error loading label encoders: {e}")
 
 # ------------------------------------------------------------------
 # 2. HTML TEMPLATE
@@ -67,7 +59,7 @@ HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html>
 <head>
-    <title>🏠 House Price Predictor</title>
+    <title>ðŸ  House Price Predictor</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -147,7 +139,7 @@ HTML_TEMPLATE = """
 </head>
 <body>
     <div class="container">
-        <h1>🏠 House Price Predictor</h1>
+        <h1>ðŸ  House Price Predictor</h1>
         <p class="subtitle">Enter house details to get estimated price</p>
 
         <form id="predictForm">
@@ -195,7 +187,7 @@ HTML_TEMPLATE = """
                 <label>Fireplaces</label>
                 <input type="number" name="Fireplaces" value="0">
             </div>
-            <button type="submit" class="btn-predict">🔮 Predict Price</button>
+            <button type="submit" class="btn-predict">ðŸ”® Predict Price</button>
         </form>
 
         <div id="result" class="result">
@@ -295,7 +287,7 @@ def predict():
                     try:
                         input_df[col] = label_encoders[col].transform(input_df[col].astype(str))
                     except Exception as e:
-                        print(f"⚠️ Encoding error for {col}: {e}")
+                        print(f"âš ï¸ Encoding error for {col}: {e}")
 
         # --- 3d. Scale & Predict ---
         if scaler is None:
@@ -313,7 +305,7 @@ def predict():
         })
 
     except Exception as e:
-        print(f"❌ Prediction error: {e}")
+        print(f"âŒ Prediction error: {e}")
         print(traceback.format_exc())
         return jsonify({
             'success': False,
@@ -341,3 +333,4 @@ def health():
 # 5. REQUIRED FOR VERCEL
 # ------------------------------------------------------------------
 app = app
+
