@@ -1,44 +1,15 @@
-# .gitignore for House Price Prediction project
-
-# Virtual environment
-.venv/
-venv/
-env/
-
-# Data files (large, download from Kaggle)
-data/train.csv
-data/test.csv
-
-# Model artefacts (generated after training)
-src/model.pkl
-src/scaler.pkl
-src/label_encoders.pkl
-
-# Output plots & submission (generated after training)
-outputs/eda_plots/*.png
-outputs/model_results/*.png
-outputs/submission.csv
-
-# Jupyter checkpoints
-.ipynb_checkpoints/
-notebooks/.ipynb_checkpoints/
-
-# Python cache
+﻿.venv/
 __pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-*.egg-info/
-dist/
-build/
-
-# OS files
+*.pyc
+*.pkl
+*.csv
+*.png
 .DS_Store
-Thumbs.db
-desktop.ini
-
-# IDE files
+.env
+*.log
+*.db
+*.sqlite3
 .vscode/
 .idea/
-*.swp
-*.swo
+node_modules/
+.vercel/

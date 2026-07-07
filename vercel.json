@@ -1,0 +1,14 @@
+﻿{
+  "functions": {
+    "src/api/index.py": {
+      "runtime": "python3.9",
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/src/api/index.py"
+    }
+  ]
+}

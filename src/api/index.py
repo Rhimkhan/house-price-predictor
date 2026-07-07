@@ -1,0 +1,304 @@
+﻿from flask import Flask, request, render_template_string, jsonify
+import pandas as pd
+import numpy as np
+import joblib
+import os
+import sys
+
+# Add parent directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+app = Flask(__name__)
+
+# Load models
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+model_path = os.path.join(BASE_DIR, 'model.pkl')
+scaler_path = os.path.join(BASE_DIR, 'scaler.pkl')
+encoders_path = os.path.join(BASE_DIR, 'label_encoders.pkl')
+
+# Try to load models
+try:
+    model = joblib.load(model_path)
+    scaler = joblib.load(scaler_path)
+    label_encoders = joblib.load(encoders_path)
+    print("✅ Models loaded successfully")
+except Exception as e:
+    print(f"❌ Error loading models: {e}")
+    model = None
+    scaler = None
+    label_encoders = None
+
+# HTML Template
+HTML_TEMPLATE = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🏠 House Price Predictor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        input:focus, select:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
+        }
+        .btn-predict {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        .btn-predict:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(102,126,234,0.4);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            background: #f8f9fa;
+            text-align: center;
+            display: none;
+        }
+        .result.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        .price {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .error {
+            color: #dc3545;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 House Price Predictor</h1>
+        <p class="subtitle">Enter house details to get estimated price</p>
+        
+        <form id="predictForm">
+            <div class="form-group">
+                <label>Lot Area (sq ft)</label>
+                <input type="number" name="LotArea" value="10000" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Overall Quality (1-10)</label>
+                <input type="number" name="OverallQual" value="6" min="1" max="10" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Year Built</label>
+                <input type="number" name="YearBuilt" value="2000" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Total Basement SF</label>
+                <input type="number" name="TotalBsmtSF" value="800">
+            </div>
+            
+            <div class="form-group">
+                <label>1st Floor SF</label>
+                <input type="number" name="X1stFlrSF" value="1000">
+            </div>
+            
+            <div class="form-group">
+                <label>2nd Floor SF</label>
+                <input type="number" name="X2ndFlrSF" value="0">
+            </div>
+            
+            <div class="form-group">
+                <label>Garage Area (sq ft)</label>
+                <input type="number" name="GarageArea" value="400">
+            </div>
+            
+            <div class="form-group">
+                <label>Bedrooms</label>
+                <input type="number" name="BedroomAbvGr" value="3" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Full Bathrooms</label>
+                <input type="number" name="FullBath" value="2" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Half Bathrooms</label>
+                <input type="number" name="HalfBath" value="1">
+            </div>
+            
+            <div class="form-group">
+                <label>Fireplaces</label>
+                <input type="number" name="Fireplaces" value="0">
+            </div>
+            
+            <button type="submit" class="btn-predict">🔮 Predict Price</button>
+        </form>
+        
+        <div id="result" class="result">
+            <p style="color: #666; font-size: 14px;">Estimated Price</p>
+            <div class="price" id="priceDisplay"></div>
+        </div>
+        
+        <div id="error" class="error"></div>
+    </div>
+
+    <script>
+        document.getElementById('predictForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+            
+            const resultDiv = document.getElementById('result');
+            const errorDiv = document.getElementById('error');
+            const priceDisplay = document.getElementById('priceDisplay');
+            
+            resultDiv.classList.remove('show');
+            errorDiv.textContent = '';
+            
+            try {
+                const response = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    priceDisplay.textContent = '$' + result.price.toLocaleString();
+                    resultDiv.classList.add('show');
+                } else {
+                    errorDiv.textContent = 'Error: ' + result.error;
+                }
+            } catch (err) {
+                errorDiv.textContent = 'Error: Could not connect to server';
+            }
+        });
+    </script>
+</body>
+</html>
+"""
+
+@app.route('/', methods=['GET'])
+def index():
+    return HTML_TEMPLATE
+
+@app.route('/api/predict', methods=['POST'])
+def predict():
+    try:
+        data = request.get_json()
+        
+        # Convert to DataFrame
+        input_df = pd.DataFrame([{
+            'LotArea': float(data.get('LotArea', 10000)),
+            'OverallQual': float(data.get('OverallQual', 6)),
+            'YearBuilt': float(data.get('YearBuilt', 2000)),
+            'TotalBsmtSF': float(data.get('TotalBsmtSF', 0)),
+            '1stFlrSF': float(data.get('X1stFlrSF', 0)),
+            '2ndFlrSF': float(data.get('X2ndFlrSF', 0)),
+            'GrLivArea': float(data.get('X1stFlrSF', 0)) + float(data.get('X2ndFlrSF', 0)),
+            'GarageArea': float(data.get('GarageArea', 0)),
+            'Fireplaces': float(data.get('Fireplaces', 0)),
+            'FullBath': float(data.get('FullBath', 0)),
+            'HalfBath': float(data.get('HalfBath', 0)),
+            'BedroomAbvGr': float(data.get('BedroomAbvGr', 0)),
+            'Neighborhood': data.get('Neighborhood', 'NAmes')
+        }])
+        
+        # Handle missing values
+        input_df = input_df.fillna(0)
+        
+        # Encode categorical
+        for col in label_encoders:
+            if col in input_df.columns:
+                input_df[col] = label_encoders[col].transform(input_df[col].astype(str))
+        
+        # Scale features
+        input_scaled = scaler.transform(input_df)
+        
+        # Predict
+        prediction = float(model.predict(input_scaled)[0])
+        prediction = max(prediction, 10000)
+        
+        return jsonify({
+            'success': True,
+            'price': round(prediction, 2)
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 400
+
+# This is REQUIRED for Vercel
+app = app
