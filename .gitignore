@@ -13,3 +13,4 @@ __pycache__/
 .idea/
 node_modules/
 .vercel/
+.vercel
