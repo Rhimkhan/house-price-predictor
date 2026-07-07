@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: house-price-prediction
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 5000
+    healthCheckPath: /health
