@@ -4,31 +4,57 @@ import numpy as np
 import joblib
 import os
 import sys
+import traceback
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 app = Flask(__name__)
 
-# Load models
+# ------------------------------------------------------------------
+# 1. LOAD MODELS WITH ERROR HANDLING
+# ------------------------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 model_path = os.path.join(BASE_DIR, 'model.pkl')
 scaler_path = os.path.join(BASE_DIR, 'scaler.pkl')
 encoders_path = os.path.join(BASE_DIR, 'label_encoders.pkl')
 
-# Try to load models
-try:
-    model = joblib.load(model_path)
-    scaler = joblib.load(scaler_path)
-    label_encoders = joblib.load(encoders_path)
-    print("✅ Models loaded successfully")
-except Exception as e:
-    print(f"❌ Error loading models: {e}")
-    model = None
-    scaler = None
-    label_encoders = None
+print(f"📁 Looking for models in: {BASE_DIR}")
 
-# HTML Template
+model = None
+scaler = None
+label_encoders = None
+
+try:
+    if os.path.exists(model_path):
+        model = joblib.load(model_path)
+        print("✅ Model loaded successfully")
+    else:
+        print(f"❌ Model not found at: {model_path}")
+except Exception as e:
+    print(f"❌ Error loading model: {e}")
+
+try:
+    if os.path.exists(scaler_path):
+        scaler = joblib.load(scaler_path)
+        print("✅ Scaler loaded successfully")
+    else:
+        print(f"❌ Scaler not found at: {scaler_path}")
+except Exception as e:
+    print(f"❌ Error loading scaler: {e}")
+
+try:
+    if os.path.exists(encoders_path):
+        label_encoders = joblib.load(encoders_path)
+        print("✅ Label encoders loaded successfully")
+    else:
+        print(f"❌ Label encoders not found at: {encoders_path}")
+except Exception as e:
+    print(f"❌ Error loading label encoders: {e}")
+
+# ------------------------------------------------------------------
+# 2. HTML TEMPLATE
+# ------------------------------------------------------------------
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html>
@@ -54,25 +80,10 @@ HTML_TEMPLATE = """
             width: 100%;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 10px;
-        }
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            font-weight: 600;
-            color: #555;
-            margin-bottom: 5px;
-        }
+        h1 { text-align: center; color: #333; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 30px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: 600; color: #555; margin-bottom: 5px; }
         input, select {
             width: 100%;
             padding: 10px 15px;
@@ -111,10 +122,7 @@ HTML_TEMPLATE = """
             text-align: center;
             display: none;
         }
-        .result.show {
-            display: block;
-            animation: fadeIn 0.5s;
-        }
+        .result.show { display: block; animation: fadeIn 0.5s; }
         .price {
             font-size: 2.5rem;
             font-weight: bold;
@@ -126,102 +134,86 @@ HTML_TEMPLATE = """
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .error {
-            color: #dc3545;
-            text-align: center;
-            margin-top: 10px;
-        }
+        .error { color: #dc3545; text-align: center; margin-top: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🏠 House Price Predictor</h1>
         <p class="subtitle">Enter house details to get estimated price</p>
-        
+
         <form id="predictForm">
             <div class="form-group">
                 <label>Lot Area (sq ft)</label>
                 <input type="number" name="LotArea" value="10000" required>
             </div>
-            
             <div class="form-group">
                 <label>Overall Quality (1-10)</label>
                 <input type="number" name="OverallQual" value="6" min="1" max="10" required>
             </div>
-            
             <div class="form-group">
                 <label>Year Built</label>
                 <input type="number" name="YearBuilt" value="2000" required>
             </div>
-            
             <div class="form-group">
                 <label>Total Basement SF</label>
                 <input type="number" name="TotalBsmtSF" value="800">
             </div>
-            
             <div class="form-group">
                 <label>1st Floor SF</label>
                 <input type="number" name="X1stFlrSF" value="1000">
             </div>
-            
             <div class="form-group">
                 <label>2nd Floor SF</label>
                 <input type="number" name="X2ndFlrSF" value="0">
             </div>
-            
             <div class="form-group">
                 <label>Garage Area (sq ft)</label>
                 <input type="number" name="GarageArea" value="400">
             </div>
-            
             <div class="form-group">
                 <label>Bedrooms</label>
                 <input type="number" name="BedroomAbvGr" value="3" required>
             </div>
-            
             <div class="form-group">
                 <label>Full Bathrooms</label>
                 <input type="number" name="FullBath" value="2" required>
             </div>
-            
             <div class="form-group">
                 <label>Half Bathrooms</label>
                 <input type="number" name="HalfBath" value="1">
             </div>
-            
             <div class="form-group">
                 <label>Fireplaces</label>
                 <input type="number" name="Fireplaces" value="0">
             </div>
-            
             <button type="submit" class="btn-predict">🔮 Predict Price</button>
         </form>
-        
+
         <div id="result" class="result">
             <p style="color: #666; font-size: 14px;">Estimated Price</p>
-            <div class="price" id="priceDisplay"></div>
+            <div class="price" id="priceDisplay">$0</div>
         </div>
-        
         <div id="error" class="error"></div>
     </div>
 
     <script>
         document.getElementById('predictForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
             const formData = new FormData(this);
             const data = {};
             formData.forEach((value, key) => {
                 data[key] = value;
             });
-            
+
             const resultDiv = document.getElementById('result');
             const errorDiv = document.getElementById('error');
             const priceDisplay = document.getElementById('priceDisplay');
-            
+
             resultDiv.classList.remove('show');
             errorDiv.textContent = '';
-            
+
             try {
                 const response = await fetch('/api/predict', {
                     method: 'POST',
@@ -230,9 +222,9 @@ HTML_TEMPLATE = """
                     },
                     body: JSON.stringify(data)
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     priceDisplay.textContent = '$' + result.price.toLocaleString();
                     resultDiv.classList.add('show');
@@ -248,16 +240,28 @@ HTML_TEMPLATE = """
 </html>
 """
 
+# ------------------------------------------------------------------
+# 3. ROUTES
+# ------------------------------------------------------------------
 @app.route('/', methods=['GET'])
 def index():
     return HTML_TEMPLATE
 
 @app.route('/api/predict', methods=['POST'])
 def predict():
+    # --- 3a. Check if models are loaded ---
+    if model is None or scaler is None or label_encoders is None:
+        return jsonify({
+            'success': False,
+            'error': 'Model files are not loaded. Please try again later.'
+        }), 500
+
     try:
         data = request.get_json()
-        
-        # Convert to DataFrame
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+
+        # --- 3b. Build input DataFrame ---
         input_df = pd.DataFrame([{
             'LotArea': float(data.get('LotArea', 10000)),
             'OverallQual': float(data.get('OverallQual', 6)),
@@ -273,32 +277,42 @@ def predict():
             'BedroomAbvGr': float(data.get('BedroomAbvGr', 0)),
             'Neighborhood': data.get('Neighborhood', 'NAmes')
         }])
-        
-        # Handle missing values
+
         input_df = input_df.fillna(0)
-        
-        # Encode categorical
-        for col in label_encoders:
-            if col in input_df.columns:
-                input_df[col] = label_encoders[col].transform(input_df[col].astype(str))
-        
-        # Scale features
+
+        # --- 3c. Encode categorical (safe) ---
+        if label_encoders is not None:
+            for col in label_encoders:
+                if col in input_df.columns:
+                    try:
+                        input_df[col] = label_encoders[col].transform(input_df[col].astype(str))
+                    except Exception as e:
+                        print(f"⚠️ Encoding error for {col}: {e}")
+
+        # --- 3d. Scale & Predict ---
+        if scaler is None:
+            return jsonify({'success': False, 'error': 'Scaler not loaded'}), 500
         input_scaled = scaler.transform(input_df)
-        
-        # Predict
+
+        if model is None:
+            return jsonify({'success': False, 'error': 'Model not loaded'}), 500
         prediction = float(model.predict(input_scaled)[0])
-        prediction = max(prediction, 10000)
-        
+        prediction = max(prediction, 10000.0)
+
         return jsonify({
             'success': True,
             'price': round(prediction, 2)
         })
-        
+
     except Exception as e:
+        print(f"❌ Prediction error: {e}")
+        print(traceback.format_exc())
         return jsonify({
             'success': False,
-            'error': str(e)
-        }), 400
+            'error': f'Prediction failed: {str(e)}'
+        }), 500
 
-# This is REQUIRED for Vercel
+# ------------------------------------------------------------------
+# 4. REQUIRED FOR VERCEL
+# ------------------------------------------------------------------
 app = app
