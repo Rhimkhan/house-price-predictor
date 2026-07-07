@@ -1,4 +1,4 @@
-﻿{
+{
   "functions": {
     "src/api/index.py": {
       "runtime": "python3.9",
