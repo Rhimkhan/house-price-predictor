@@ -1,0 +1,40 @@
+# ==============================================
+#  House Price Prediction - Requirements
+#  Install: pip install -r requirements.txt
+# ==============================================
+
+# Core Data Science
+pandas==2.2.2
+numpy==1.26.4
+scipy==1.13.1
+
+# Visualisation
+matplotlib==3.9.0
+seaborn==0.13.2
+plotly==5.22.0
+
+# Machine Learning
+scikit-learn==1.5.0
+xgboost==2.0.3
+lightgbm==4.3.0
+catboost==1.2.5
+
+# Utilities
+joblib==1.4.2
+tqdm==4.66.4
+pyyaml==6.0.1
+
+# Web Application
+flask==3.0.3
+werkzeug==3.0.3
+
+# Explainability (optional — install separately if needed)
+# shap==0.45.1
+
+# Notebook
+ipykernel==6.29.5
+notebook==7.2.0
+
+# Testing
+pytest==8.2.0
+pytest-cov==5.0.0

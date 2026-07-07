@@ -1,0 +1,96 @@
+# ═══════════════════════════════════════════════════════════════
+#   HOUSE PRICE PREDICTION — CENTRAL CONFIGURATION
+# ═══════════════════════════════════════════════════════════════
+
+project:
+  name: "House Price Prediction"
+  version: "2.0.0"
+  author: "Data Science Portfolio"
+  description: "Production-grade ML pipeline for Ames Housing dataset"
+
+# ── Paths ────────────────────────────────────────────────────
+paths:
+  data_dir:       "data"
+  train_file:     "data/train.csv"
+  test_file:      "data/test.csv"
+  model_dir:      "src"
+  model_file:     "src/model.pkl"
+  scaler_file:    "src/scaler.pkl"
+  encoders_file:  "src/label_encoders.pkl"
+  output_dir:     "outputs"
+  eda_plots_dir:  "outputs/eda_plots"
+  model_plots_dir:"outputs/model_results"
+  shap_plots_dir: "outputs/shap_plots"
+  submission_file:"outputs/submission.csv"
+  log_file:       "outputs/pipeline.log"
+  metrics_file:   "outputs/model_results.csv"
+
+# ── Data Preprocessing ───────────────────────────────────────
+preprocessing:
+  missing_threshold: 0.50      # Drop columns with > 50% missing
+  outlier_method: "iqr"        # "iqr", "zscore"
+  outlier_threshold: 3.0       # Z-score threshold
+  test_size: 0.20
+  random_state: 42
+  target_column: "SalePrice"
+  id_column: "Id"
+
+# ── Feature Engineering ──────────────────────────────────────
+feature_engineering:
+  polynomial_degree: 2
+  log_transform_skewed: true
+  skewness_threshold: 0.75
+  create_interactions: true
+  create_boolean_flags: true
+  create_aggregations: true
+
+# ── Model Training ───────────────────────────────────────────
+training:
+  cv_folds: 5
+  scoring: "neg_mean_squared_error"
+  n_jobs: -1
+  verbose: 0
+
+  # XGBoost hyperparameter search space
+  xgboost:
+    n_estimators: [200, 300, 500]
+    max_depth: [3, 4, 5]
+    learning_rate: [0.01, 0.05, 0.1]
+    subsample: [0.7, 0.8, 1.0]
+    colsample_bytree: [0.7, 0.8, 1.0]
+    reg_alpha: [0, 0.1, 0.5]
+    reg_lambda: [1, 1.5, 2]
+
+  # LightGBM hyperparameter search space
+  lightgbm:
+    n_estimators: [200, 300]
+    max_depth: [4, 6, 8]
+    learning_rate: [0.05, 0.1]
+    num_leaves: [31, 63]
+    min_child_samples: [20, 30]
+
+  # Ridge / Lasso search space
+  ridge:
+    alpha: [0.1, 1.0, 10.0, 100.0]
+  lasso:
+    alpha: [0.001, 0.01, 0.1, 1.0]
+
+# ── Flask Web App ────────────────────────────────────────────
+flask:
+  host: "0.0.0.0"
+  port: 5000
+  debug: false
+  secret_key: "house-price-2024-secret"
+
+# ── Logging ──────────────────────────────────────────────────
+logging:
+  level: "INFO"           # DEBUG, INFO, WARNING, ERROR
+  format: "%(asctime)s — %(levelname)s — %(message)s"
+  datefmt: "%Y-%m-%d %H:%M:%S"
+
+# ── SHAP ────────────────────────────────────────────────────
+explainability:
+  shap_sample_size: 100    # rows to use for SHAP background
+  lime_num_features: 10    # top features to show in LIME
+  generate_shap: true
+  generate_lime: false     # requires lime package
