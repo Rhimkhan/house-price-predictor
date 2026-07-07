@@ -21,6 +21,7 @@ encoders_path = os.path.join(BASE_DIR, "label_encoders.pkl")
 
 print(f"ðŸ“ Looking for models in: {BASE_DIR}")
 
+model_load_error = "Not attempted"
 model = None
 scaler = None
 label_encoders = None
@@ -319,6 +320,7 @@ def predict():
 def health():
     return jsonify({
         'status': 'ok',
+         'model_error': model_load_error,
         'model_loaded': model is not None,
         'scaler_loaded': scaler is not None,
         'encoders_loaded': label_encoders is not None,
@@ -333,4 +335,5 @@ def health():
 # 5. REQUIRED FOR VERCEL
 # ------------------------------------------------------------------
 app = app
+
 
