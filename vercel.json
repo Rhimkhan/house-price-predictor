@@ -1,17 +1,1 @@
-{
-  "builds": [
-    {
-      "src": "src/api/index.py",
-      "use": "@vercel/python",
-      "config": {
-        "includeFiles": ["src/*.pkl"]
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "src/api/index.py"
-    }
-  ]
-}
+{"builds":[{"src":"src/api/index.py","use":"@vercel/python","config":{"includeFiles":["src/model.pkl","src/scaler.pkl","src/label_encoders.pkl"]}}],"routes":[{"src":"/(.*)","dest":"src/api/index.py"}]}

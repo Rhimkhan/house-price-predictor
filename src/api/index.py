@@ -15,6 +15,14 @@ app = Flask(__name__)
 # 1. LOAD MODELS WITH ERROR HANDLING
 # ------------------------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+API_DIR = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(BASE_DIR, "model.pkl")
+scaler_path = os.path.join(BASE_DIR, "scaler.pkl")
+encoders_path = os.path.join(BASE_DIR, "label_encoders.pkl")
+if not os.path.exists(model_path):
+    model_path = os.path.join(API_DIR, "..", "model.pkl")
+    scaler_path = os.path.join(API_DIR, "..", "scaler.pkl")
+    encoders_path = os.path.join(API_DIR, "..", "label_encoders.pkl")
 model_path = os.path.join(BASE_DIR, 'model.pkl')
 scaler_path = os.path.join(BASE_DIR, 'scaler.pkl')
 encoders_path = os.path.join(BASE_DIR, 'label_encoders.pkl')
