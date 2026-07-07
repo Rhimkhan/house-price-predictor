@@ -27,14 +27,12 @@ def handle_missing_values(df):
     numeric_cols = df_copy.select_dtypes(include=[np.number]).columns
     for col in numeric_cols:
         if df_copy[col].isnull().any():
-            median_val = df_copy[col].median()
-            df_copy[col] = df_copy[col].fillna(median_val)
+            df_copy[col] = df_copy[col].fillna(df_copy[col].median())
 
     categorical_cols = df_copy.select_dtypes(include=['object']).columns
     for col in categorical_cols:
         if df_copy[col].isnull().any():
-            mode_val = df_copy[col].mode()[0]
-            df_copy[col] = df_copy[col].fillna(mode_val)
+            df_copy[col] = df_copy[col].fillna(df_copy[col].mode()[0])
 
     return df_copy
 
