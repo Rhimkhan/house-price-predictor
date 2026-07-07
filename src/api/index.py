@@ -1,4 +1,4 @@
-﻿from flask import Flask, request, render_template_string, jsonify
+from flask import Flask, request, render_template_string, jsonify
 import pandas as pd
 import numpy as np
 import joblib
@@ -313,6 +313,23 @@ def predict():
         }), 500
 
 # ------------------------------------------------------------------
-# 4. REQUIRED FOR VERCEL
+# 4. HEALTH CHECK ENDPOINT
+# ------------------------------------------------------------------
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({
+        'status': 'ok',
+        'model_loaded': model is not None,
+        'scaler_loaded': scaler is not None,
+        'encoders_loaded': label_encoders is not None,
+        'model_path': model_path,
+        'model_exists_on_disk': os.path.exists(model_path),
+        'scaler_exists_on_disk': os.path.exists(scaler_path),
+        'base_dir': BASE_DIR,
+        'base_dir_files': os.listdir(BASE_DIR) if os.path.exists(BASE_DIR) else []
+    })
+
+# ------------------------------------------------------------------
+# 5. REQUIRED FOR VERCEL
 # ------------------------------------------------------------------
 app = app
