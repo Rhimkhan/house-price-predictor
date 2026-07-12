@@ -37,8 +37,10 @@ with col1:
     st.subheader("📍 Location Features")
     area = st.number_input("Area (sq ft)", min_value=300, max_value=10000, value=1500, step=50)
     bedrooms = st.number_input("Bedrooms", min_value=1, max_value=10, value=3, step=1)
-    washroom = st.number_input("Washroom (Full Bathrooms)", min_value=0, max_value=10, value=2, step=1)
-    bathroom = st.number_input("Bathroom (Half Bathrooms)", min_value=0, max_value=5, value=1, step=1)
+    # ✅ CHANGED: Full Bathrooms → Washroom
+    washroom = st.number_input("Washroom", min_value=0, max_value=10, value=2, step=1, help="Full bathrooms with shower/bathtub")
+    # ✅ CHANGED: Half Bathrooms → Bathroom
+    bathroom = st.number_input("Bathroom", min_value=0, max_value=5, value=1, step=1, help="Half bathrooms (toilet + sink)")
 
 with col2:
     st.subheader("🏗️ Property Features")
@@ -62,25 +64,6 @@ with col4:
 
 furnishing = st.sidebar.selectbox("Furnishing Status", ["Unfurnished", "Semi-Furnished", "Fully Furnished"])
 
-# CURRENCY SELECTOR
-st.sidebar.markdown("---")
-st.sidebar.subheader("💱 Currency Settings")
-
-currency = st.sidebar.radio(
-    "Select Currency",
-    ["₹ INR (Indian Rupees)", "$ USD (US Dollars)"],
-    index=0
-)
-
-if currency == "₹ INR (Indian Rupees)":
-    currency_symbol = "₹"
-    conversion_rate = 1.0
-    currency_code = "INR"
-else:
-    currency_symbol = "$"
-    conversion_rate = 0.012
-    currency_code = "USD"
-
 predict_btn = st.sidebar.button("🔮 Predict Price", type="primary", use_container_width=True)
 
 st.markdown("---")
@@ -100,29 +83,55 @@ if predict_btn:
             ]
             features_array = np.array(features).reshape(1, -1)
             prediction_inr = model.predict(features_array)[0]
-            predicted_price = prediction_inr * conversion_rate
             
             st.success("✅ Prediction Complete!")
             
-            col_result1, col_result2, col_result3 = st.columns([1, 2, 1])
-            with col_result2:
-                st.markdown(f"""
-                <div style="text-align: center; padding: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; color: white;">
-                    <h2 style="margin: 0; font-size: 1.2rem;">Predicted Price</h2>
-                    <h1 style="margin: 10px 0; font-size: 3.5rem;">{currency_symbol} {predicted_price:,.2f}</h1>
-                    <p style="margin: 0; opacity: 0.8;">Based on your selected features</p>
-                    <p style="margin: 5px 0 0 0; opacity: 0.6; font-size: 0.9rem;">Currency: {currency_code}</p>
-                </div>
-                """, unsafe_allow_html=True)
+            # ✅ PRICE SHOW KAREIN PEHLE INR MEIN
+            st.markdown(f"""
+            <div style="text-align: center; padding: 20px; background: #f0f2f6; border-radius: 10px; margin: 20px 0;">
+                <h3 style="margin: 0; color: #333;">💰 Predicted Price</h3>
+                <h1 style="margin: 10px 0; font-size: 3rem; color: #667eea;">₹ {prediction_inr:,.2f}</h1>
+                <p style="margin: 0; color: #666;">Indian Rupees (INR)</p>
+            </div>
+            """, unsafe_allow_html=True)
             
+            # ✅ YEHI HAI WOH OPTION - INR YA USD MEIN DEKHNA HAI
+            st.subheader("💱 View price in:")
+            
+            col_btn1, col_btn2 = st.columns(2)
+            
+            with col_btn1:
+                if st.button("🇮🇳 Indian Rupees (INR)", use_container_width=True):
+                    st.balloons()
+                    st.markdown(f"""
+                    <div style="text-align: center; padding: 25px; background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); border-radius: 15px; color: white; margin: 10px 0;">
+                        <h2 style="margin: 0; font-size: 1.2rem;">🏠 House Price</h2>
+                        <h1 style="margin: 10px 0; font-size: 3.5rem;">₹ {prediction_inr:,.2f}</h1>
+                        <p style="margin: 0; opacity: 0.9;">Indian Rupees (INR)</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+            
+            with col_btn2:
+                if st.button("💵 US Dollars (USD)", use_container_width=True):
+                    usd_price = prediction_inr * 0.012
+                    st.balloons()
+                    st.markdown(f"""
+                    <div style="text-align: center; padding: 25px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; color: white; margin: 10px 0;">
+                        <h2 style="margin: 0; font-size: 1.2rem;">🏠 House Price</h2>
+                        <h1 style="margin: 10px 0; font-size: 3.5rem;">$ {usd_price:,.2f}</h1>
+                        <p style="margin: 0; opacity: 0.9;">US Dollars (USD)</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+            
+            # Input summary
             with st.expander("📋 Input Summary"):
                 col_a, col_b = st.columns(2)
                 with col_a:
                     st.write("**📍 Location Features**")
                     st.write(f"- Area: {area} sq ft")
                     st.write(f"- Bedrooms: {bedrooms}")
-                    st.write(f"- Washroom (Full): {washroom}")
-                    st.write(f"- Bathroom (Half): {bathroom}")
+                    st.write(f"- Washroom: {washroom}")
+                    st.write(f"- Bathroom: {bathroom}")
                     st.write(f"- Stories: {stories}")
                     st.write(f"- Year Built: {year_built}")
                 with col_b:
@@ -134,13 +143,9 @@ if predict_btn:
                     st.write(f"- Air Conditioning: {air_conditioning}")
                     st.write(f"- Preferred Area: {pref_area}")
                     st.write(f"- Furnishing: {furnishing}")
-                    st.write(f"- Currency: {currency_code}")
+                    
         except Exception as e:
-            st.error(f"❌ Error making prediction: {str(e)}")
+            st.error(f"❌ Error: {str(e)}")
 
 st.markdown("---")
 st.caption("🏠 House Price Prediction App | Built with Streamlit")
-
-st.sidebar.markdown("---")
-st.sidebar.caption("💡 Adjust all parameters and click Predict Price")
-st.sidebar.caption(f"💱 Current Currency: {currency_code}")
