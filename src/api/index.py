@@ -98,7 +98,7 @@ if predict_btn:
             
             st.success("? Prediction Complete!")
             st.markdown(f"""
-            <div style="text-align: center; padding: 20px; background: #f0f2f6; border-radius: 20px; margin: 20px 0;">
+            <div style="text-align: center; padding: 30px; background: #f0f2f6; border-radius: 20px; margin: 20px 0;">
                 <h3 style="margin: 0; color: #333;">?? Predicted Price</h3>
                 <h1 style="margin: 10px 0; font-size: 4rem; color: #e74c3c;">{currency_symbol} {display_price:,.2f}</h1>
                 <p style="margin: 0; color: #666;">{currency_name}</p>
