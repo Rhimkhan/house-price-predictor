@@ -67,7 +67,7 @@ currency = st.sidebar.selectbox(
     key="currency_select"
 )
 
-predict_btn = st.sidebar.button("?? Predict Price", type="primary", use_container_width=True)
+predict_btn = st.sidebar.button("?? Calculate Price", type="primary", use_container_width=True)
 
 st.markdown("---")
 
