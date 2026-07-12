@@ -1,4 +1,4 @@
-﻿from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify
 import pandas as pd
 import numpy as np
 import joblib
@@ -55,7 +55,7 @@ HTML_TEMPLATE = """
 </head>
 <body>
     <div class="container">
-        <h1>🏠 House Price Predictor</h1>
+        <h1>?? House Price Predictor</h1>
         <p>Enter house details to get estimated price</p>
         <form id="predictForm">
             <div class="form-group"><label>Lot Area (sq ft)</label><input type="number" name="LotArea" value="10000"></div>
@@ -69,7 +69,7 @@ HTML_TEMPLATE = """
             <div class="form-group"><label>Full Bathrooms</label><input type="number" name="FullBath" value="2"></div>
             <div class="form-group"><label>Half Bathrooms</label><input type="number" name="HalfBath" value="1"></div>
             <div class="form-group"><label>Fireplaces</label><input type="number" name="Fireplaces" value="0"></div>
-            <button type="submit" class="btn-predict">🔮 Predict Price</button>
+            <button type="submit" class="btn-predict">?? Predict Price</button>
         </form>
         <div id="result" class="result">
             <p style="color:#666;font-size:14px;">Estimated Price</p>
@@ -89,7 +89,7 @@ HTML_TEMPLATE = """
                 const response = await fetch("/api/predict", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
                 const result = await response.json();
                 if (result.success) {
-                    document.getElementById("priceDisplay").textContent = "$" + result.price.toLocaleString();
+                    document.getElementById("priceDisplay").textContent = "₹" + result.price.toLocaleString("en-IN", {maximumFractionDigits: 0});
                     document.getElementById("result").style.display = "block";
                 } else {
                     document.getElementById("error").textContent = "Error: " + result.error;
@@ -140,7 +140,7 @@ def predict():
         input_scaled = scaler.transform(input_df)
         prediction = float(model.predict(input_scaled)[0])
         prediction = max(prediction, 10000.0)
-        return jsonify({"success": True, "price": round(prediction, 2)})
+        prediction_inr = prediction * 84`n        return jsonify({"success": True, "price": round(prediction_inr, 2)})
     except Exception as e:
         return jsonify({"success": False, "error": f"Prediction failed: {str(e)}"}), 500
 
